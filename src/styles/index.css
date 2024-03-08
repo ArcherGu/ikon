@@ -1,0 +1,29 @@
+body,
+html,
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  background: transparent;
+  margin: 0;
+  font-family: "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(208, 208, 208, 0.3);
+  border-radius: 4px;
+}
+
+:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(208, 208, 208, 0.6);
+}
+
+.flex-center {
+  @apply flex items-center justify-center;
+}
