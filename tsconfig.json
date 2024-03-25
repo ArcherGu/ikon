@@ -19,7 +19,8 @@
     },
     "resolveJsonModule": true,
     "types": [
-      "unplugin-icons/types/vue"
+      "unplugin-icons/types/vue",
+      "element-plus/global"
     ],
     "allowImportingTsExtensions": true,
     /* Linting */
