@@ -15,7 +15,11 @@ useDropZone(imgFileZone, {
   dataTypes: ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
 })
 
-const { open: openFile, reset, onChange } = useFileDialog({
+const {
+  open: openFile,
+  reset,
+  onChange,
+} = useFileDialog({
   accept: 'image/*',
   directory: false,
 })
@@ -34,12 +38,16 @@ function restFile() {
 const editorRef = ref<HTMLDivElement>()
 let editor: IkonEditor
 
-watch(editorRef, () => {
-  const el = unrefElement(editorRef)
-  if (!el)
-    return
-  editor = new IkonEditor(el)
-}, { flush: 'post' })
+watch(
+  editorRef,
+  () => {
+    const el = unrefElement(editorRef)
+    if (!el)
+      return
+    editor = new IkonEditor(el)
+  },
+  { flush: 'post' },
+)
 
 onUnmounted(() => {
   editor?.destroy()
@@ -56,9 +64,7 @@ watch(file, (file) => {
     <div class="main-block">
       <div v-show="!file" ref="imgFileZone" class="select-drop-block" @click="() => openFile()">
         <i-fluent-add-12-regular class="text-60px" />
-        <p>
-          select or drop icon here
-        </p>
+        <p>select or drop icon here</p>
       </div>
 
       <div ref="editorRef" class="img-editor" />
@@ -76,9 +82,8 @@ watch(file, (file) => {
 }
 
 .select-drop-block {
-  @apply w-full h-full border-dashed border-2 border-gray-400 rounded-lg text-gray-400 cursor-pointer;
+  @apply w-full h-full border-dashed border-2 border-gray-400 rounded-lg text-gray-400 cursor-pointer box-border;
   @apply flex flex-col justify-center items-center;
-  /* @apply bg-black bg-opacity-10; */
   @apply hover:border-gray-500 hover:text-gray-500;
   @apply transition-all duration-300 ease-linear;
   @apply absolute top-0 left-0 z-10;

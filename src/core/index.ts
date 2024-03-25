@@ -1,24 +1,17 @@
+import { App, Image, ImageEvent, Rect } from 'leafer-ui'
+import '@leafer-in/editor'
+
 export class IkonEditor {
-  resizeObserver: ResizeObserver
-  canvas: HTMLCanvasElement
-  ctx: CanvasRenderingContext2D
+  private app: App
   private imgUrl: string | null = null
 
   constructor(container: HTMLElement) {
-    this.canvas = document.createElement('canvas')
-
-    this.canvas.width = container.clientWidth
-    this.canvas.height = container.clientHeight
-
-    this.resizeObserver = new ResizeObserver(() => {
-      this.canvas.width = container.clientWidth
-      this.canvas.height = container.clientHeight
+    this.app = new App({
+      view: container,
+      ground: { type: 'draw' },
+      tree: { type: 'draw' },
+      editor: {},
     })
-    this.resizeObserver.observe(container)
-
-    container.appendChild(this.canvas)
-
-    this.ctx = this.canvas.getContext('2d')!
 
     this.drawBackground()
   }
@@ -26,41 +19,39 @@ export class IkonEditor {
   addImage(file: File) {
     this.imgUrl && URL.revokeObjectURL(this.imgUrl)
     this.imgUrl = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      this.drawBackground()
 
-      const scale = img.width > img.height ? this.canvas.width / img.width / 2 : this.canvas.height / img.height / 2
-      const width = img.width * scale
-      const height = img.height * scale
-      const x = (this.canvas.width - width) / 2
-      const y = (this.canvas.height - height) / 2
-      this.ctx.drawImage(img, x, y, width, height)
-    }
-    img.src = this.imgUrl
+    const img = new Image({
+      url: this.imgUrl,
+      editable: true,
+    })
+
+    img.once(ImageEvent.LOADED, (_: ImageEvent) => {
+      const { width, height } = this.app
+      const scale = img.width > img.height ? width / img.width / 2 : height / img.height / 2
+      img.width = img.width * scale
+      img.height = img.height * scale
+      img.x = (width - img.width) / 2
+      img.y = (height - img.height) / 2
+    })
+
+    this.app.tree.add(img)
   }
 
   private drawBackground() {
     const size = 16
-    const width = this.canvas.width
-    const height = this.canvas.height
+    const { width, height } = this.app
 
-    this.ctx.fillStyle = '#f0f0f0'
-    this.ctx.fillRect(0, 0, width, height)
-    this.ctx.fillStyle = '#ffffff'
-    for (let x = 0; x < width; x += size) {
-      for (let y = 0; y < height; y += size) {
-        if ((x / size + y / size) % 2 === 0)
-          this.ctx.fillRect(x, y, size, size)
-      }
+    const horizontalCount = Math.ceil(width / size)
+    const verticalCount = Math.ceil(height / size)
+
+    for (let i = 0; i < horizontalCount; i++) {
+      for (let j = 0; j < verticalCount; j++)
+        this.app.ground.add(Rect.one({ fill: (i + j) % 2 === 0 ? '#fff' : '#e3e3e3' }, i * size, j * size, size, size))
     }
   }
 
   destroy() {
     this.imgUrl && URL.revokeObjectURL(this.imgUrl)
-    this.imgUrl = null
-
-    this.resizeObserver.disconnect()
-    this.canvas.remove()
+    this.app.destroy()
   }
 }

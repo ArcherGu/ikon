@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@leafer-in/editor':
+    specifier: 1.0.0-rc.19
+    version: 1.0.0-rc.19
   '@vueuse/core':
     specifier: ^10.9.0
     version: 10.9.0(vue@3.4.21)
@@ -54,7 +57,7 @@ devDependencies:
     version: 5.4.3
   unocss:
     specifier: ^0.58.6
-    version: 0.58.6(postcss@8.4.35)(vite@5.2.6)
+    version: 0.58.6(postcss@8.4.38)(vite@5.2.6)
   unplugin-auto-import:
     specifier: ^0.17.5
     version: 0.17.5(@vueuse/core@10.9.0)
@@ -889,6 +892,13 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
+  /@leafer-in/editor@1.0.0-rc.19:
+    resolution: {integrity: sha512-BaKkOoLhie+4BO49OdhLJu2YHwhkjpZJuI+z7XeKQ5vDzCwxLVbej0VjAgl1L+J10Y4scCkUQh/wNNj45LO4lg==}
+    dependencies:
+      '@leafer-ui/core': 1.0.0-rc.19
+      '@leafer-ui/scale': 1.0.0-rc.19
+    dev: false
+
   /@leafer-ui/app@1.0.0-rc.19:
     resolution: {integrity: sha512-+3QcnwF1Qk64EG5uk6KVJhVn+8TCV2rfUIyHPbpKOnVzzS6YkEnMhorTnfNvKOYuZEWAUZLApb00MyhrQEDC5w==}
     dependencies:
@@ -1032,6 +1042,12 @@ packages:
     resolution: {integrity: sha512-qlUZ1ue5k5RxKtLRvd5LgOLyUKZSRDCaeQxiF+mWIzxJ9uB824OMhzzAensLZKOZt9S1Pk8GlmmhMam1KDwyKg==}
     dependencies:
       '@leafer-ui/external': 1.0.0-rc.19
+    dev: false
+
+  /@leafer-ui/scale@1.0.0-rc.19:
+    resolution: {integrity: sha512-jQ6QorwHfkVY821LxtyHUS9jpe73D6XML/du/p+6anYFvp3h9tZPxOnCSbPd2r6Rz7raX39SBDadYepj+ZJgTw==}
+    dependencies:
+      '@leafer-ui/draw': 1.0.0-rc.19
     dev: false
 
   /@leafer-ui/text@1.0.0-rc.19:
@@ -1908,7 +1924,7 @@ packages:
       sirv: 2.0.4
     dev: true
 
-  /@unocss/postcss@0.58.6(postcss@8.4.35):
+  /@unocss/postcss@0.58.6(postcss@8.4.38):
     resolution: {integrity: sha512-jTwu7llhRm7luscsk0JekCeo6RS2W98CXiCJRE1H6IDQnjGQQ/9uRAqW4wuLsv7OQ1ThF8m9NKEj0wFJv7ePNg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -1920,7 +1936,7 @@ packages:
       css-tree: 2.3.1
       fast-glob: 3.3.2
       magic-string: 0.30.8
-      postcss: 8.4.35
+      postcss: 8.4.38
     dev: true
 
   /@unocss/preset-attributify@0.58.6:
@@ -4698,7 +4714,7 @@ packages:
       '@types/unist': 2.0.10
     dev: true
 
-  /unocss@0.58.6(postcss@8.4.35)(vite@5.2.6):
+  /unocss@0.58.6(postcss@8.4.38)(vite@5.2.6):
     resolution: {integrity: sha512-HBstDtC6KKD5yCYh5hHpPdHGZai0B/iLlDwkOIK+xfQYrvl8tNBvKfRz3xgiaI5MJ+fLmEOxbfXQIjleU1A0iA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -4714,7 +4730,7 @@ packages:
       '@unocss/cli': 0.58.6
       '@unocss/core': 0.58.6
       '@unocss/extractor-arbitrary-variants': 0.58.6
-      '@unocss/postcss': 0.58.6(postcss@8.4.35)
+      '@unocss/postcss': 0.58.6(postcss@8.4.38)
       '@unocss/preset-attributify': 0.58.6
       '@unocss/preset-icons': 0.58.6
       '@unocss/preset-mini': 0.58.6
