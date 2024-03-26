@@ -1,5 +1,5 @@
 import type { App, UI } from 'leafer-ui'
-import { Bounds, Group, Line } from 'leafer-ui'
+import { Bounds, Group, Image, Line } from 'leafer-ui'
 
 export class RefLineManager {
   // horizontal line map, y as key, x as value
@@ -70,12 +70,15 @@ export class RefLineManager {
       if (!viewport.hit(bounds))
         continue
 
+      if (!(child instanceof Image))
+        continue
+
       const bBox = {
         minX: bounds.x,
-        midX: (bounds.x + bounds.width) / 2,
+        midX: bounds.x + bounds.width / 2,
         maxX: bounds.x + bounds.width,
         minY: bounds.y,
-        midY: (bounds.y + bounds.height) / 2,
+        midY: bounds.y + bounds.height / 2,
         maxY: bounds.y + bounds.height,
       }
 
@@ -172,10 +175,10 @@ export class RefLineManager {
     const targetBounds = target.getBounds()
     const targetBbox = {
       minX: targetBounds.x,
-      midX: (targetBounds.x + targetBounds.width) / 2,
+      midX: targetBounds.x + targetBounds.width / 2,
       maxX: targetBounds.x + targetBounds.width,
       minY: targetBounds.y,
-      midY: (targetBounds.y + targetBounds.height) / 2,
+      midY: targetBounds.y + targetBounds.height / 2,
       maxY: targetBounds.y + targetBounds.height,
     }
 
@@ -206,6 +209,7 @@ export class RefLineManager {
     const tol = 5
 
     // get offsetX
+    // console.log('nearestXDist', targetBbox, this.sortedXs, nearestXDist)
     if (nearestXDist <= tol) {
       if (isEqualNum(nearestXDist, distMinX))
         offsetX = nearestMinX - targetBbox.minX

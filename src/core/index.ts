@@ -1,6 +1,5 @@
 import './plugins'
 import { App, ChildEvent, Group, Image, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
-import { EditorMoveEvent } from '@leafer-in/editor'
 import type { IconBackground } from './types'
 import { RefLineManager } from './ref-line-manager'
 
@@ -10,6 +9,8 @@ export class IkonEditor {
   private iconBg: ReturnType<typeof Rect.one>
   private onImagesCountChangeCallbacks: ((count: number) => void)[] = []
   private refLineManager: RefLineManager
+  private isTargetMove = false
+  private targetMoveMouseOffset = { x: 0, y: 0 }
 
   constructor(container: HTMLElement) {
     // app
@@ -49,13 +50,34 @@ export class IkonEditor {
 
   private initEvents() {
     this.app.on(KeyEvent.UP, this.onKeyUp)
-    this.app.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
-    this.app.on(PointerEvent.DOWN, (_: PointerEvent) => {
-      if (this.app.editor.target)
+    // this.app.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
+    this.app.on(PointerEvent.MOVE, this.onItemMove)
+    this.app.on(PointerEvent.DOWN, (e: PointerEvent) => {
+      if (this.app.editor.target) {
+        const target = Array.isArray(this.app.editor.target) ? this.app.editor.target : [this.app.editor.target]
         this.refLineManager.cacheXYToBbox()
+        const targetPos = {
+          x: Math.min(...target.map(item => item.x!)),
+          y: Math.min(...target.map(item => item.y!)),
+        }
+        this.targetMoveMouseOffset = {
+          x: e.x - targetPos.x,
+          y: e.y - targetPos.y,
+        }
+        this.isTargetMove = true
+        // console.log('targetMoveMouseOffset', {
+        //   x: target[0].x!,
+        //   y: target[0].y!,
+        // }, {
+        //   x: e.x,
+        //   y: e.y,
+        // }, this.targetMoveMouseOffset)
+      }
     })
     this.app.on(PointerEvent.UP, (_: PointerEvent) => {
       this.refLineManager.clearRefLines()
+      this.targetMoveMouseOffset = { x: 0, y: 0 }
+      this.isTargetMove = false
     })
 
     this.icon.on(ChildEvent.ADD, _ => this.triggerImagesCountChange())
@@ -81,14 +103,41 @@ export class IkonEditor {
     }
   }
 
-  private onItemMove = (e: EditorMoveEvent) => {
-    const list = this.app.editor.list
-    if (list.length === 0)
+  private onItemMove = (e: PointerEvent) => {
+    if (!this.isTargetMove)
       return
 
-    const { target } = e
-    const { offsetX, offsetY } = this.refLineManager.updateRefLines(target as any)
-    list.forEach((item) => {
+    // console.log('onItemMove', e)
+
+    const targetReact = {
+      minX: Math.min(...this.app.editor.list.map(item => item.x!)),
+      minY: Math.min(...this.app.editor.list.map(item => item.y!)),
+      maxX: Math.max(...this.app.editor.list.map(item => item.x! + item.width!)),
+      maxY: Math.max(...this.app.editor.list.map(item => item.y! + item.height!)),
+    }
+    const target = new Rect({
+      x: targetReact.minX,
+      y: targetReact.minY,
+      width: targetReact.maxX - targetReact.minX,
+      height: targetReact.maxY - targetReact.minY,
+    })
+
+    // console.log('targetReact', targetReact, this.app.editor.list)
+
+    const { offsetX, offsetY } = this.refLineManager.updateRefLines(target)
+    // 如果当前 e.x, e.y 中的任意一个和 target 的 offset 和 targetMoveMouseOffset 相差 5以上，则不进行修正
+    const currentMouseOffset = {
+      x: e.x - Math.min(...this.app.editor.list.map(item => item.x!)),
+      y: e.y - Math.min(...this.app.editor.list.map(item => item.y!)),
+    }
+    // console.log('currentMouseOffset', currentMouseOffset, this.targetMoveMouseOffset)
+    const tol = 10
+    if (Math.abs(currentMouseOffset.x - this.targetMoveMouseOffset.x) > tol || Math.abs(currentMouseOffset.y - this.targetMoveMouseOffset.y) > tol) {
+      // this.targetMoveMouseOffset = currentMouseOffset
+      return
+    }
+
+    this.app.editor.list.forEach((item) => {
       item.x! += offsetX
       item.y! += offsetY
     })
