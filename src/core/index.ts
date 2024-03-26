@@ -1,9 +1,12 @@
-import { App, Image, ImageEvent, Rect } from 'leafer-ui'
+import { App, Group, Image, ImageEvent, Rect } from 'leafer-ui'
 import '@leafer-in/editor'
+import type { IconBackground } from './types'
 
 export class IkonEditor {
   private app: App
   private imgUrl: string | null = null
+  private icon: Group
+  private iconBg: ReturnType<typeof Rect.one>
 
   constructor(container: HTMLElement) {
     this.app = new App({
@@ -12,6 +15,12 @@ export class IkonEditor {
       tree: { type: 'draw' },
       editor: {},
     })
+
+    this.icon = new Group()
+    this.app.tree.add(this.icon)
+
+    this.iconBg = Rect.one({ fill: '#fff', visible: false, editable: false }, 0, 0, this.app.width, this.app.height)
+    this.icon.add(this.iconBg)
 
     this.drawBackground()
   }
@@ -34,7 +43,7 @@ export class IkonEditor {
       img.y = (height - img.height) / 2
     })
 
-    this.app.tree.add(img)
+    this.icon.add(img)
   }
 
   private drawBackground() {
@@ -48,6 +57,17 @@ export class IkonEditor {
       for (let j = 0; j < verticalCount; j++)
         this.app.ground.add(Rect.one({ fill: (i + j) % 2 === 0 ? '#fff' : '#e3e3e3' }, i * size, j * size, size, size))
     }
+  }
+
+  updateIconBg(bg: IconBackground) {
+    const { color, radius, visible } = bg
+
+    this.iconBg.visible = visible
+    this.iconBg.fill = color
+
+    const bgWidth = this.iconBg.width!
+    const cornerRadius = bgWidth * radius * 0.01
+    this.iconBg.cornerRadius = cornerRadius
   }
 
   destroy() {

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css?family=Dosis:700,600");
+
 body,
 html,
 #app {
@@ -5,9 +7,9 @@ html,
   height: 100vh;
   overflow: hidden;
   scroll-behavior: smooth;
-  background: transparent;
   margin: 0;
-  font-family: "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Dosis, "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: linear-gradient(0deg, #75ddff 0%, #c6f3d6 100%);
 }
 
 ::-webkit-scrollbar {
@@ -26,4 +28,8 @@ html,
 
 .flex-center {
   @apply flex items-center justify-center;
+}
+
+.el-checkbox {
+  @apply origin-top-left scale-125;
 }

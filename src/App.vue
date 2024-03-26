@@ -2,6 +2,8 @@
 import { unrefElement, useDropZone, useFileDialog } from '@vueuse/core'
 import { onUnmounted, ref, watch } from 'vue'
 import { IkonEditor } from '@src/core'
+import type { IconBackground } from '@src/core/types'
+import logo from '@src/assets/ikon.png'
 
 const imgFileZone = ref<HTMLDivElement>()
 const file = ref<File | null>(null)
@@ -57,17 +59,57 @@ watch(file, (file) => {
   if (file)
     editor?.addImage(file)
 })
+
+const iconBg = ref<IconBackground>({
+  visible: false,
+  color: '#ffffff',
+  radius: 20,
+})
+watch(iconBg, (value) => {
+  editor?.updateIconBg(value)
+}, { deep: true })
 </script>
 
 <template>
-  <div class="h-full w-full flex-center flex-col">
-    <div class="main-block">
-      <div v-show="!file" ref="imgFileZone" class="select-drop-block" @click="() => openFile()">
-        <i-fluent-add-12-regular class="text-60px" />
-        <p>select or drop icon here</p>
+  <div class="h-full w-full flex flex-col items-center">
+    <div class="logo-plane mt-100px">
+      <img :src="logo" alt="ikon" class="w-100px">
+      <div class="text-80px text-gray-500 ml-10px">
+        <span class="text-cyan-500">i</span>
+        <span>k</span>
+        <span class="text-amber-600">o</span>
+        <span>n</span>
+      </div>
+    </div>
+    <div class="flex items-start">
+      <div class="left-plane">
+        <div class="icon-bg-ctrl">
+          <el-checkbox v-model="iconBg.visible" label="Icon Background" />
+          <div v-if="iconBg.visible" class="pl-25px">
+            <div class="flex items-center">
+              <span class="ctrl-label">Color:</span>
+              <el-color-picker v-model="iconBg.color" />
+              <span class="text-gray-500 ml-5px">[{{ iconBg.color }}]</span>
+            </div>
+
+            <div class="flex items-center">
+              <span class="ctrl-label">Radius:</span>
+              <el-slider v-model="iconBg.radius" :step="1" :min="0" :max="50" :show-tooltip="false" />
+              <span class="text-gray-500 ml-15px">[{{ `${iconBg.radius}%` }}]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="center-plane">
+        <div v-show="!file" ref="imgFileZone" class="select-drop-block" @click="() => openFile()">
+          <i-fluent-add-12-regular class="text-60px" />
+          <span class="text-24px">select or drop icon here</span>
+        </div>
+
+        <div ref="editorRef" class="img-editor" />
       </div>
 
-      <div ref="editorRef" class="img-editor" />
+      <div class="right-plane" />
     </div>
 
     <el-button v-if="file" class="mt-50px" @click="restFile">
@@ -77,8 +119,28 @@ watch(file, (file) => {
 </template>
 
 <style scoped>
-.main-block {
-  @apply w-256px h-256px relative;
+.logo-plane {
+  @apply flex items-center justify-center h-150px;
+}
+
+.ctrl-label {
+  @apply text-gray-500 mr-15px;
+}
+
+.left-plane {
+  @apply w-250px flex flex-col justify-center items-start;
+}
+
+.icon-bg-ctrl .el-slider {
+  @apply w-100px;
+}
+
+.center-plane {
+  @apply w-350px h-350px relative;
+}
+
+.right-plane {
+  @apply w-250px flex flex-col justify-center items-start;
 }
 
 .select-drop-block {
