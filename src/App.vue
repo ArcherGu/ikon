@@ -28,8 +28,11 @@ watch(
 )
 
 function onDrop(files: File[] | null) {
-  if (files)
-    editor?.addImage(files[0])
+  if (files) {
+    files.forEach((file) => {
+      editor?.addImage(file)
+    })
+  }
 }
 
 const imgDropZone = ref<HTMLDivElement>()
@@ -49,7 +52,9 @@ const {
 
 onChange((files) => {
   if (files) {
-    editor?.addImage(files[0])
+    Array.from(files).forEach((file) => {
+      editor?.addImage(file)
+    })
     reset()
   }
 })

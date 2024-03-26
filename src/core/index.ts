@@ -1,37 +1,44 @@
-import { App, Group, Image, ImageEvent, KeyEvent, Rect } from 'leafer-ui'
-import '@leafer-in/editor'
+import { App, ChildEvent, Group, Image, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
+import { EditorMoveEvent } from '@leafer-in/editor'
 import type { IconBackground } from './types'
+import { RefLineManager } from './ref-line-manager'
 
 export class IkonEditor {
   private app: App
-  private imgUrls: string[] = []
   private icon: Group
   private iconBg: ReturnType<typeof Rect.one>
   private onImagesCountChangeCallbacks: ((count: number) => void)[] = []
+  private refLineManager: RefLineManager
 
   constructor(container: HTMLElement) {
+    // app
     this.app = new App({
       view: container,
       ground: { type: 'draw' },
       tree: { type: 'draw' },
+      sky: { type: 'draw' },
       editor: {
         keyEvent: true,
         rotatePoint: {},
       },
     })
 
+    // icon group
     this.icon = new Group()
-    this.app.tree.add(this.icon)
-
     this.iconBg = Rect.one({ fill: '#fff', visible: false, editable: false }, 0, 0, this.app.width, this.app.height)
     this.icon.add(this.iconBg)
+    this.app.tree.add(this.icon)
 
+    // center lines
+    this.refLineManager = new RefLineManager(this.app, this.icon)
+
+    // init
     this.initEvents()
     this.drawBackground()
   }
 
   private triggerImagesCountChange() {
-    const images = this.icon.children.filter(child => child instanceof Image)
+    const images = this.getAllImages()
     this.onImagesCountChangeCallbacks.forEach(callback => callback(images.length))
   }
 
@@ -40,33 +47,86 @@ export class IkonEditor {
   }
 
   private initEvents() {
-    this.app.on(KeyEvent.UP, (e: KeyEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && this.app.editor.list.length > 0) {
-        const items = [...this.app.editor.list]
-        items.forEach((item) => {
-          item.remove()
-        })
-
-        this.app.editor.target = []
-        this.triggerImagesCountChange()
-      }
+    this.app.on(KeyEvent.UP, this.onKeyUp)
+    this.app.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
+    this.app.on(PointerEvent.DOWN, (e: PointerEvent) => {
+      // eslint-disable-next-line no-console
+      console.log('pointer down', e)
     })
+    this.app.editor.on(PointerEvent.UP, (e: PointerEvent) => {
+      // eslint-disable-next-line no-console
+      console.log('pointer up', e)
+    })
+
+    this.icon.on(ChildEvent.ADD, _ => this.triggerImagesCountChange())
+    this.icon.on(ChildEvent.REMOVE, this.onImageRemove)
+  }
+
+  private onImageRemove = (e: ChildEvent) => {
+    const { target } = e
+    if (target instanceof Image) {
+      URL.revokeObjectURL(target.url)
+      this.triggerImagesCountChange()
+    }
+  }
+
+  private onKeyUp = (e: KeyEvent) => {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && this.app.editor.list.length > 0) {
+      const items = [...this.app.editor.list]
+      items.forEach((item) => {
+        item.remove()
+      })
+
+      this.app.editor.target = []
+    }
+  }
+
+  private onItemMove = (e: EditorMoveEvent) => {
+    const list = this.app.editor.list
+    if (list.length === 0)
+      return
+
+    const { target } = e
+    const targetBounds = target.getBounds()
+
+    if (targetBounds.x <= 0 || targetBounds.x + targetBounds.width >= this.app.width || targetBounds.y <= 0 || targetBounds.y + targetBounds.height >= this.app.height) {
+      const targetXLimit = Math.min(Math.max(targetBounds.x, 0), this.app.width - targetBounds.width)
+      const targetYLimit = Math.min(Math.max(targetBounds.y, 0), this.app.height - targetBounds.height)
+
+      // item and target's relative position is still same
+      const items = list.length > 1 ? [...list, target] : list
+      for (const item of items) {
+        const itemBounds = item.getBounds()
+        const dxInBounds = targetBounds.x - itemBounds.x
+        const dyInBounds = targetBounds.y - itemBounds.y
+        const dxInLocal = itemBounds.x - item.x!
+        const dyInLocal = itemBounds.y - item.y!
+
+        // limit item's position
+        item.x = targetXLimit - dxInBounds - dxInLocal
+        item.y = targetYLimit - dyInBounds - dyInLocal
+      }
+    }
+  }
+
+  getAllImages() {
+    return this.icon.children.filter(child => child instanceof Image) as Image[]
   }
 
   addImage(file: File) {
-    const imgUrl = URL.createObjectURL(file)
-    this.imgUrls.push(imgUrl)
-
     const img = new Image({
-      url: imgUrl,
+      url: URL.createObjectURL(file),
       editable: true,
     })
 
     img.once(ImageEvent.LOADED, (_: ImageEvent) => {
       const { width, height } = this.app
-      const scale = img.width > img.height ? width / img.width / 2 : height / img.height / 2
-      img.width = img.width * scale
-      img.height = img.height * scale
+      if (img.width > width / 2 || img.height > height / 2) {
+        const scale = img.width > img.height ? width / img.width / 2 : height / img.height / 2
+        img.width = img.width * scale
+        img.height = img.height * scale
+      }
+
       img.x = (width - img.width) / 2
       img.y = (height - img.height) / 2
     })
@@ -100,7 +160,7 @@ export class IkonEditor {
   }
 
   destroy() {
-    this.imgUrls.forEach(url => URL.revokeObjectURL(url))
+    this.getAllImages().forEach(img => URL.revokeObjectURL(img.url))
     this.app.destroy()
   }
 }
