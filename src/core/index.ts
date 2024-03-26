@@ -1,19 +1,23 @@
-import { App, Group, Image, ImageEvent, Rect } from 'leafer-ui'
+import { App, Group, Image, ImageEvent, KeyEvent, Rect } from 'leafer-ui'
 import '@leafer-in/editor'
 import type { IconBackground } from './types'
 
 export class IkonEditor {
   private app: App
-  private imgUrl: string | null = null
+  private imgUrls: string[] = []
   private icon: Group
   private iconBg: ReturnType<typeof Rect.one>
+  private onImagesCountChangeCallbacks: ((count: number) => void)[] = []
 
   constructor(container: HTMLElement) {
     this.app = new App({
       view: container,
       ground: { type: 'draw' },
       tree: { type: 'draw' },
-      editor: {},
+      editor: {
+        keyEvent: true,
+        rotatePoint: {},
+      },
     })
 
     this.icon = new Group()
@@ -22,15 +26,39 @@ export class IkonEditor {
     this.iconBg = Rect.one({ fill: '#fff', visible: false, editable: false }, 0, 0, this.app.width, this.app.height)
     this.icon.add(this.iconBg)
 
+    this.initEvents()
     this.drawBackground()
   }
 
+  private triggerImagesCountChange() {
+    const images = this.icon.children.filter(child => child instanceof Image)
+    this.onImagesCountChangeCallbacks.forEach(callback => callback(images.length))
+  }
+
+  onImagesCountChange(callback: (count: number) => void) {
+    this.onImagesCountChangeCallbacks.push(callback)
+  }
+
+  private initEvents() {
+    this.app.on(KeyEvent.UP, (e: KeyEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && this.app.editor.list.length > 0) {
+        const items = [...this.app.editor.list]
+        items.forEach((item) => {
+          item.remove()
+        })
+
+        this.app.editor.target = []
+        this.triggerImagesCountChange()
+      }
+    })
+  }
+
   addImage(file: File) {
-    this.imgUrl && URL.revokeObjectURL(this.imgUrl)
-    this.imgUrl = URL.createObjectURL(file)
+    const imgUrl = URL.createObjectURL(file)
+    this.imgUrls.push(imgUrl)
 
     const img = new Image({
-      url: this.imgUrl,
+      url: imgUrl,
       editable: true,
     })
 
@@ -44,6 +72,7 @@ export class IkonEditor {
     })
 
     this.icon.add(img)
+    this.triggerImagesCountChange()
   }
 
   private drawBackground() {
@@ -71,7 +100,7 @@ export class IkonEditor {
   }
 
   destroy() {
-    this.imgUrl && URL.revokeObjectURL(this.imgUrl)
+    this.imgUrls.forEach(url => URL.revokeObjectURL(url))
     this.app.destroy()
   }
 }

@@ -12,6 +12,14 @@ html,
   background: linear-gradient(0deg, #75ddff 0%, #c6f3d6 100%);
 }
 
+:root {
+  --el-font-family: Dosis, "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+button {
+  font-family: var(--el-font-family);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

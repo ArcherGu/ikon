@@ -5,14 +5,35 @@ import { IkonEditor } from '@src/core'
 import type { IconBackground } from '@src/core/types'
 import logo from '@src/assets/ikon.png'
 
-const imgFileZone = ref<HTMLDivElement>()
-const file = ref<File | null>(null)
+let editor: IkonEditor
+onUnmounted(() => {
+  editor?.destroy()
+})
+
+const hasImage = ref(false)
+const editorRef = ref<HTMLDivElement>()
+watch(
+  editorRef,
+  () => {
+    const el = unrefElement(editorRef)
+    if (!el)
+      return
+    editor = new IkonEditor(el)
+
+    editor.onImagesCountChange((c) => {
+      hasImage.value = c > 0
+    })
+  },
+  { flush: 'post' },
+)
+
 function onDrop(files: File[] | null) {
   if (files)
-    file.value = files[0]
+    editor?.addImage(files[0])
 }
 
-useDropZone(imgFileZone, {
+const imgDropZone = ref<HTMLDivElement>()
+useDropZone(imgDropZone, {
   onDrop,
   dataTypes: ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'],
 })
@@ -27,37 +48,10 @@ const {
 })
 
 onChange((files) => {
-  if (files)
-    file.value = files[0]
-})
-
-function restFile() {
-  file.value = null
-  reset()
-}
-
-// Editor
-const editorRef = ref<HTMLDivElement>()
-let editor: IkonEditor
-
-watch(
-  editorRef,
-  () => {
-    const el = unrefElement(editorRef)
-    if (!el)
-      return
-    editor = new IkonEditor(el)
-  },
-  { flush: 'post' },
-)
-
-onUnmounted(() => {
-  editor?.destroy()
-})
-
-watch(file, (file) => {
-  if (file)
-    editor?.addImage(file)
+  if (files) {
+    editor?.addImage(files[0])
+    reset()
+  }
 })
 
 const iconBg = ref<IconBackground>({
@@ -100,8 +94,8 @@ watch(iconBg, (value) => {
           </div>
         </div>
       </div>
-      <div class="center-plane">
-        <div v-show="!file" ref="imgFileZone" class="select-drop-block" @click="() => openFile()">
+      <div ref="imgDropZone" class="center-plane">
+        <div v-show="!hasImage" class="img-select-zone" @click="() => openFile()">
           <i-fluent-add-12-regular class="text-60px" />
           <span class="text-24px">select or drop icon here</span>
         </div>
@@ -111,10 +105,6 @@ watch(iconBg, (value) => {
 
       <div class="right-plane" />
     </div>
-
-    <el-button v-if="file" class="mt-50px" @click="restFile">
-      Rest
-    </el-button>
   </div>
 </template>
 
@@ -143,7 +133,7 @@ watch(iconBg, (value) => {
   @apply w-250px flex flex-col justify-center items-start;
 }
 
-.select-drop-block {
+.img-select-zone {
   @apply w-full h-full border-dashed border-2 border-gray-400 rounded-lg text-gray-400 cursor-pointer box-border;
   @apply flex flex-col justify-center items-center;
   @apply hover:border-gray-500 hover:text-gray-500;
