@@ -1,3 +1,4 @@
+import './plugins'
 import { App, ChildEvent, Group, Image, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
 import { EditorMoveEvent } from '@leafer-in/editor'
 import type { IconBackground } from './types'
@@ -16,7 +17,7 @@ export class IkonEditor {
       view: container,
       ground: { type: 'draw' },
       tree: { type: 'draw' },
-      sky: { type: 'draw' },
+      sky: {},
       editor: {
         keyEvent: true,
         rotatePoint: {},
@@ -49,13 +50,12 @@ export class IkonEditor {
   private initEvents() {
     this.app.on(KeyEvent.UP, this.onKeyUp)
     this.app.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
-    this.app.on(PointerEvent.DOWN, (e: PointerEvent) => {
-      // eslint-disable-next-line no-console
-      console.log('pointer down', e)
+    this.app.on(PointerEvent.DOWN, (_: PointerEvent) => {
+      if (this.app.editor.target)
+        this.refLineManager.cacheXYToBbox()
     })
-    this.app.editor.on(PointerEvent.UP, (e: PointerEvent) => {
-      // eslint-disable-next-line no-console
-      console.log('pointer up', e)
+    this.app.on(PointerEvent.UP, (_: PointerEvent) => {
+      this.refLineManager.clearRefLines()
     })
 
     this.icon.on(ChildEvent.ADD, _ => this.triggerImagesCountChange())
@@ -87,26 +87,11 @@ export class IkonEditor {
       return
 
     const { target } = e
-    const targetBounds = target.getBounds()
-
-    if (targetBounds.x <= 0 || targetBounds.x + targetBounds.width >= this.app.width || targetBounds.y <= 0 || targetBounds.y + targetBounds.height >= this.app.height) {
-      const targetXLimit = Math.min(Math.max(targetBounds.x, 0), this.app.width - targetBounds.width)
-      const targetYLimit = Math.min(Math.max(targetBounds.y, 0), this.app.height - targetBounds.height)
-
-      // item and target's relative position is still same
-      const items = list.length > 1 ? [...list, target] : list
-      for (const item of items) {
-        const itemBounds = item.getBounds()
-        const dxInBounds = targetBounds.x - itemBounds.x
-        const dyInBounds = targetBounds.y - itemBounds.y
-        const dxInLocal = itemBounds.x - item.x!
-        const dyInLocal = itemBounds.y - item.y!
-
-        // limit item's position
-        item.x = targetXLimit - dxInBounds - dxInLocal
-        item.y = targetYLimit - dyInBounds - dyInLocal
-      }
-    }
+    const { offsetX, offsetY } = this.refLineManager.updateRefLines(target as any)
+    list.forEach((item) => {
+      item.x! += offsetX
+      item.y! += offsetY
+    })
   }
 
   getAllImages() {
