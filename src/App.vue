@@ -155,7 +155,7 @@ async function generateAndDownload() {
     </div>
     <div class="action-plane">
       <el-button
-        size="large" type="success" plain :disabled="!hasImage" :loading="generateLoading"
+        size="large" type="success" :disabled="!hasImage" :loading="generateLoading"
         @click="generateAndDownload"
       >
         Generate & Download

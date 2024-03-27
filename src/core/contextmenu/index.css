@@ -1,0 +1,31 @@
+.ikon-contextmenu-bg {
+  position: absolute;
+  inset: 0 0 0 0;
+  z-index: -1;
+  transition: z-index 0.15s cubic-bezier(.4,.8,.74,1);
+}
+
+.ikon-contextmenu-bg.show {
+  z-index: 1000;
+}
+
+.ikon-contextmenu {
+  position: absolute;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, .8);
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 4px 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+  opacity: 0;
+  transition: opacity 0.15s cubic-bezier(.4,.8,.74,1);
+  backdrop-filter: blur(5px);
+
+  /* for test */
+  width: 200px;
+  height: 300px;
+}
+
+.ikon-contextmenu-bg.show .ikon-contextmenu {
+  opacity: 1;
+}

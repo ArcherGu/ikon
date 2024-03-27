@@ -10,6 +10,7 @@ import type { IOS_ContentJson } from './platforms/ios'
 import { getIOSIcons } from './platforms/ios'
 import type { IconInfo } from './platforms/types'
 import { getCustomSizeIcons } from './platforms/custom'
+import { Contextmenu } from './contextmenu'
 
 export class IkonEditor {
   private app: App
@@ -24,7 +25,9 @@ export class IkonEditor {
     startPoses: new Map<number, { x: number, y: number }>(),
   }
 
-  constructor(container: HTMLElement) {
+  private contextmenu: Contextmenu
+
+  constructor(private container: HTMLElement) {
     // app
     this.app = new App({
       view: container,
@@ -43,8 +46,12 @@ export class IkonEditor {
     this.icon.add(this.iconBg)
     this.app.tree.add(this.icon)
 
-    // center lines
+    // ref line manager
     this.refLineManager = new RefLineManager(this.app, this.icon)
+
+    // contextmenu
+    this.contextmenu = new Contextmenu(this.app)
+    this.container.addEventListener('contextmenu', this.contextmenu.show)
 
     // init
     this.initEvents()
@@ -197,6 +204,8 @@ export class IkonEditor {
 
   destroy() {
     this.getAllImages().forEach(img => URL.revokeObjectURL(img.url))
+    this.container.removeEventListener('contextmenu', this.contextmenu.show)
+    this.contextmenu.destroy()
     this.app.destroy()
   }
 
