@@ -1,4 +1,4 @@
-import type { App, UI } from 'leafer-ui'
+import type { App } from 'leafer-ui'
 import { Bounds, Group, Image, Line } from 'leafer-ui'
 
 export class RefLineManager {
@@ -23,12 +23,7 @@ export class RefLineManager {
   }
 
   clearRefLines() {
-    // console.log('clearRefLines start', this.refLines.children.length)
-    this.refLines.children.forEach(child => child.remove())
-    // for (const child of this.refLines.children) {
-    //   child.remove()
-    // }
-    // console.log('clearRefLines end', this.refLines.children.length)
+    this.refLines.clear()
   }
 
   private clear() {
@@ -162,7 +157,7 @@ export class RefLineManager {
     return hLine
   }
 
-  updateRefLines(target: UI): { offsetX: number, offsetY: number } {
+  updateRefLines(targetBounds: Bounds): { offsetX: number, offsetY: number } {
     // remove all ref lines
     this.clearRefLines()
 
@@ -172,7 +167,6 @@ export class RefLineManager {
     let offsetX: number | null = null
     let offsetY: number | null = null
 
-    const targetBounds = target.getBounds()
     const targetBbox = {
       minX: targetBounds.x,
       midX: targetBounds.x + targetBounds.width / 2,
@@ -209,7 +203,6 @@ export class RefLineManager {
     const tol = 5
 
     // get offsetX
-    // console.log('nearestXDist', targetBbox, this.sortedXs, nearestXDist)
     if (nearestXDist <= tol) {
       if (isEqualNum(nearestXDist, distMinX))
         offsetX = nearestMinX - targetBbox.minX
