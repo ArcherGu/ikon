@@ -44,6 +44,10 @@ export class IkonEditor {
     this.drawBackground()
   }
 
+  private get editor() {
+    return this.app.editor
+  }
+
   private triggerImagesCountChange() {
     const images = this.getAllImages()
     this.onImagesCountChangeCallbacks.forEach(callback => callback(images.length))
@@ -55,15 +59,21 @@ export class IkonEditor {
 
   private initEvents() {
     this.app.on(KeyEvent.UP, this.onKeyUp)
-    this.app.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
+    this.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
     this.app.on(PointerEvent.MOVE, (e: PointerEvent) => {
       this.targetMove.currentMousePos = { x: e.x, y: e.y }
     })
     this.app.on(PointerEvent.DOWN, (e: PointerEvent) => {
-      if (this.app.editor.list.length > 0) {
+      if (this.editor.list.length > 0) {
         this.targetMove.mouseStart = { x: e.x, y: e.y }
-        for (const item of this.app.editor.list)
+        for (const item of this.editor.list)
           this.targetMove.startPoses.set(item.innerId, { x: item.x!, y: item.y! })
+
+        // if multiple items selected, save out box start pos
+        if (this.editor.list.length > 1) {
+          const { element } = this.editor
+          this.targetMove.startPoses.set(element.innerId, { x: element.x!, y: element.y! })
+        }
 
         this.targetMove.moving = true
         this.refLineManager.cacheXYToBbox()
@@ -91,34 +101,17 @@ export class IkonEditor {
   }
 
   private onKeyUp = (e: KeyEvent) => {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && this.app.editor.list.length > 0) {
-      const items = [...this.app.editor.list]
+    if ((e.key === 'Delete' || e.key === 'Backspace') && this.editor.list.length > 0) {
+      const items = [...this.editor.list]
       items.forEach((item) => {
         item.remove()
       })
 
-      this.app.editor.target = []
+      this.editor.target = []
     }
   }
 
-  private getMoveBounds(list: typeof this.app.editor.list) {
-    const bBox = {
-      minX: Math.min(...list.map(item => item.getBounds().x)),
-      minY: Math.min(...list.map(item => item.getBounds().y)),
-      maxX: Math.max(...list.map((item) => {
-        const bounds = item.getBounds()
-        return bounds.x + bounds.width
-      })),
-      maxY: Math.max(...list.map((item) => {
-        const bounds = item.getBounds()
-        return bounds.y + bounds.height
-      })),
-    }
-
-    return new Bounds(bBox.minX, bBox.minY, bBox.maxX - bBox.minX, bBox.maxY - bBox.minY)
-  }
-
-  private onItemMove = (_: EditorMoveEvent) => {
+  private onItemMove = (e: EditorMoveEvent) => {
     const { moving, mouseStart, currentMousePos, startPoses } = this.targetMove
     if (!moving)
       return
@@ -126,17 +119,19 @@ export class IkonEditor {
     const dx = currentMousePos.x - mouseStart.x
     const dy = currentMousePos.y - mouseStart.y
 
+    const moveList = this.editor.list.length > 1 ? [...this.editor.list, this.editor.element] : this.editor.list
+
     // move
-    for (const item of this.app.editor.list) {
+    for (const item of moveList) {
       const startPos = startPoses.get(item.innerId)!
       item.x = startPos.x + dx
       item.y = startPos.y + dy
     }
 
     // magnetic
-    const moveBounds = this.getMoveBounds(this.app.editor.list)
-    const { offsetX, offsetY } = this.refLineManager.updateRefLines(moveBounds)
-    for (const item of this.app.editor.list) {
+    const targetBounds = new Bounds(e.target.getBounds())
+    const { offsetX, offsetY } = this.refLineManager.updateRefLines(targetBounds)
+    for (const item of moveList) {
       const startPos = startPoses.get(item.innerId)!
       item.x = startPos.x + dx + offsetX
       item.y = startPos.y + dy + offsetY

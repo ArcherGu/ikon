@@ -1,5 +1,5 @@
 import type { App } from 'leafer-ui'
-import { Bounds, Group, Image, Line } from 'leafer-ui'
+import { Bounds, Group, Line } from 'leafer-ui'
 
 export class RefLineManager {
   // horizontal line map, y as key, x as value
@@ -63,9 +63,6 @@ export class RefLineManager {
       // skip item not in viewport
       const bounds = new Bounds(child.getBounds())
       if (!viewport.hit(bounds))
-        continue
-
-      if (!(child instanceof Image))
         continue
 
       const bBox = {
