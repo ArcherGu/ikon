@@ -3,6 +3,14 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
+  "description": "an easy icon editor and generator",
+  "author": "ArcherGu (https://github.com/ArcherGu/)",
+  "license": "MIT",
+  "keywords": [
+    "icon",
+    "editor",
+    "generator"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

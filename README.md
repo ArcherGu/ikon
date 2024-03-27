@@ -1,14 +1,11 @@
 <p align="center">
-  <img width="500" src="./src/assets/lightwing-vue.png" alt="Lightwing logo">
+  <img width="256" src="./src/assets/ikon.png" alt="ikon logo">
 </p>
-<br/>
 
-# Lightwing + Vue.js Web Template
+# ikon
 
-## Tech Stack
+An easy icon editor and generator powered by [Leafer](https://www.leaferjs.com/).
 
-- 🪟 [Vue.js](https://vuejs.org/)
-- ⚡ ‍[Vite](https://vitejs.dev/)
-- ⏩ [UnoCSS](https://unocss.dev/)
-- 😎 [Iconify](https://iconify.design/)
-- 🔨 [Eslint Rules](https://github.com/ArcherGu/lightwing/tree/main/packages/eslint-config/)
+## License
+
+<samp>code is licensed under <a href='./LICENSE'>MIT</a>,<br> words and images are licensed under <a href='https://creativecommons.org/licenses/by-nc-sa/4.0/'>CC BY-NC-SA 4.0</a></samp>.
