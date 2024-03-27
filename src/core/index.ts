@@ -41,16 +41,17 @@ export class IkonEditor {
     })
 
     // icon group
-    this.icon = new Group()
-    this.iconBg = Rect.one({ fill: '#fff', visible: false, editable: false }, 0, 0, this.app.width, this.app.height)
-    this.icon.add(this.iconBg)
+    this.iconBg = Rect.one({ fill: '#fff', visible: false, editable: false, zIndex: 0 }, 0, 0, this.app.width, this.app.height)
+    this.app.tree.add(this.iconBg)
+
+    this.icon = new Group({ zIndex: 1 })
     this.app.tree.add(this.icon)
 
     // ref line manager
-    this.refLineManager = new RefLineManager(this.app, this.icon)
+    this.refLineManager = new RefLineManager(this.app, this.icon, this.iconBg)
 
     // contextmenu
-    this.contextmenu = new Contextmenu(this.app)
+    this.contextmenu = new Contextmenu(this.app, this.icon)
     this.container.addEventListener('contextmenu', this.contextmenu.show)
 
     // init

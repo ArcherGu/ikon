@@ -1,4 +1,4 @@
-import type { App } from 'leafer-ui'
+import type { App, Rect } from 'leafer-ui'
 import { Bounds, Group, Line } from 'leafer-ui'
 
 export class RefLineManager {
@@ -17,6 +17,7 @@ export class RefLineManager {
   constructor(
     private app: App,
     private icon: Group,
+    private iconBg: ReturnType<typeof Rect.one>,
   ) {
     this.refLines = new Group()
     this.app.sky.add(this.refLines)
@@ -55,7 +56,7 @@ export class RefLineManager {
     const viewport = new Bounds(0, 0, this.app.width, this.app.height)
 
     const { list: selectedItems } = this.app.editor
-    for (const child of this.icon.children) {
+    for (const child of [...this.icon.children, this.iconBg]) {
       // skip selected items
       if (selectedItems.some(e => e.innerId === child.innerId))
         continue
