@@ -1,8 +1,15 @@
 import './plugins'
-import { App, Bounds, ChildEvent, Group, Image, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
+import { App, Bounds, Box, ChildEvent, Group, Image, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
 import { EditorMoveEvent } from '@leafer-in/editor'
+import JSZip from 'jszip'
 import type { IconBackground } from './types'
 import { RefLineManager } from './ref-line-manager'
+import type { Platform } from './platforms'
+import { getAndroidIcons, getElectronIcons } from './platforms'
+import type { IOS_ContentJson } from './platforms/ios'
+import { getIOSIcons } from './platforms/ios'
+import type { IconInfo } from './platforms/types'
+import { getCustomSizeIcons } from './platforms/custom'
 
 export class IkonEditor {
   private app: App
@@ -191,5 +198,67 @@ export class IkonEditor {
   destroy() {
     this.getAllImages().forEach(img => URL.revokeObjectURL(img.url))
     this.app.destroy()
+  }
+
+  async generateAndDownload(platform: Platform[], customSizes: number[]) {
+    let iosContentJson: IOS_ContentJson | null = null
+    const icons: IconInfo[] = []
+    for (const p of platform) {
+      if (p === 'IOS') {
+        const { contentJson, icons: _icons } = getIOSIcons()
+        iosContentJson = contentJson
+        icons.push(..._icons)
+      }
+      else if (p === 'Android') {
+        icons.push(...getAndroidIcons())
+      }
+      else if (p === 'Electron') {
+        icons.push(...getElectronIcons())
+      }
+    }
+    if (customSizes.length > 0)
+      icons.push(...getCustomSizeIcons(customSizes))
+
+    const box = new Box({
+      width: this.iconBg.width!,
+      height: this.iconBg.height!,
+      overflow: 'hide',
+      cornerRadius: this.iconBg.cornerRadius,
+    })
+
+    box.add(this.iconBg.clone())
+    const images = this.getAllImages()
+    for (const img of images)
+      box.add(img.clone())
+
+    box.x = -9999
+    box.y = -9999
+    this.app.tree.add(box)
+
+    const { data: leaferCanvas } = await box.export('canvas')
+    box.remove()
+    const zip = new JSZip()
+    const iconCanvas = leaferCanvas.view as HTMLCanvasElement
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    for (const { size, name, path } of icons) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      canvas.width = size
+      canvas.height = size
+      ctx.drawImage(iconCanvas, 0, 0, size, size)
+      const base64 = canvas.toDataURL('image/png')
+      zip.file(path.concat(name).join('/'), base64.split(',')[1], { base64: true })
+    }
+
+    if (iosContentJson)
+      zip.file('ios/AppIcon.appiconset/Contents.json', JSON.stringify(iosContentJson))
+
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'ikon.zip'
+    a.click()
+    URL.revokeObjectURL(url)
   }
 }

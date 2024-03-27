@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { unrefElement, useDropZone, useFileDialog } from '@vueuse/core'
-import { onUnmounted, ref, watch } from 'vue'
+import { onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { IkonEditor } from '@src/core'
 import type { IconBackground } from '@src/core/types'
 import logo from '@src/assets/ikon.png'
+import { CustomSizes, type Platform, Platforms } from '@src/core/platforms'
 
 let editor: IkonEditor
 onUnmounted(() => {
@@ -67,6 +68,27 @@ const iconBg = ref<IconBackground>({
 watch(iconBg, (value) => {
   editor?.updateIconBg(value)
 }, { deep: true })
+
+const customSizes = ref<number[]>([])
+const platform = ref<Platform[]>([])
+onBeforeMount(() => {
+  for (const p of Platforms)
+    platform.value.push(p)
+})
+
+const generateLoading = ref(false)
+async function generateAndDownload() {
+  generateLoading.value = true
+  try {
+    await editor?.generateAndDownload(platform.value, customSizes.value)
+  }
+  catch (error) {
+    console.error(error)
+  }
+  finally {
+    generateLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -79,6 +101,9 @@ watch(iconBg, (value) => {
         <span class="text-amber-600">o</span>
         <span>n</span>
       </div>
+    </div>
+    <div class="flex items-center text-gray-500 justify-center mb-20px -mt-10px">
+      an easy icon editor and generator
     </div>
     <div class="flex items-start">
       <div class="left-plane">
@@ -108,7 +133,33 @@ watch(iconBg, (value) => {
         <div ref="editorRef" class="img-editor" />
       </div>
 
-      <div class="right-plane" />
+      <div class="right-plane pl-20px box-border">
+        <div class="ctrl-label">
+          Platform:
+        </div>
+        <div>
+          <el-checkbox-group v-model="platform">
+            <el-checkbox v-for="p in Platforms" :key="p" :label="p" :value="p" />
+          </el-checkbox-group>
+        </div>
+
+        <div class="ctrl-label mt-10px">
+          Custom Size:
+        </div>
+        <div>
+          <el-checkbox-group v-model="customSizes">
+            <el-checkbox v-for="s in CustomSizes" :key="s" :label="`${s}x${s}`" :value="s" />
+          </el-checkbox-group>
+        </div>
+      </div>
+    </div>
+    <div class="action-plane">
+      <el-button
+        size="large" type="success" plain :disabled="!hasImage" :loading="generateLoading"
+        @click="generateAndDownload"
+      >
+        Generate & Download
+      </el-button>
     </div>
   </div>
 </template>
@@ -148,5 +199,9 @@ watch(iconBg, (value) => {
 
 .img-editor {
   @apply w-full h-full;
+}
+
+.action-plane {
+  @apply flex items-end justify-center h-100px;
 }
 </style>
