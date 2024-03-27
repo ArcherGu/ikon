@@ -24,5 +24,6 @@ dist-ssr
 *.sw?
 
 components.d.ts
+auto-imports.d.ts
 
 local-data
