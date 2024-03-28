@@ -33,7 +33,9 @@ export class IkonEditor {
       view: container,
       ground: { type: 'draw' },
       tree: { type: 'draw' },
-      sky: {},
+      sky: {
+        usePartRender: false,
+      },
       editor: {
         keyEvent: true,
         rotatePoint: {},
