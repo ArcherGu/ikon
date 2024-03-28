@@ -21,7 +21,6 @@ export class IkonEditor {
   private targetMove = {
     moving: false,
     mouseStart: { x: 0, y: 0 },
-    currentMousePos: { x: 0, y: 0 },
     startPoses: new Map<number, { x: number, y: number }>(),
   }
 
@@ -37,6 +36,7 @@ export class IkonEditor {
       editor: {
         keyEvent: true,
         rotatePoint: {},
+        middlePoint: { width: 16, height: 4, cornerRadius: 2 },
       },
     })
 
@@ -75,9 +75,6 @@ export class IkonEditor {
   private initEvents() {
     this.app.on(KeyEvent.UP, this.onKeyUp)
     this.editor.on(EditorMoveEvent.MOVE, this.onItemMove)
-    this.app.on(PointerEvent.MOVE, (e: PointerEvent) => {
-      this.targetMove.currentMousePos = { x: e.x, y: e.y }
-    })
     this.app.on(PointerEvent.DOWN, (e: PointerEvent) => {
       if (this.editor.list.length > 0) {
         this.targetMove.mouseStart = { x: e.x, y: e.y }
@@ -97,7 +94,6 @@ export class IkonEditor {
     this.app.on(PointerEvent.UP, (_: PointerEvent) => {
       this.targetMove.moving = false
       this.targetMove.mouseStart = { x: 0, y: 0 }
-      this.targetMove.currentMousePos = { x: 0, y: 0 }
       this.targetMove.startPoses.clear()
 
       this.refLineManager.clearRefLines()
@@ -127,12 +123,14 @@ export class IkonEditor {
   }
 
   private onItemMove = (e: EditorMoveEvent) => {
-    const { moving, mouseStart, currentMousePos, startPoses } = this.targetMove
+    const { moving, mouseStart, startPoses } = this.targetMove
     if (!moving)
       return
 
-    const dx = currentMousePos.x - mouseStart.x
-    const dy = currentMousePos.y - mouseStart.y
+    const { cursorPoint } = this.app
+
+    const dx = cursorPoint.x - mouseStart.x
+    const dy = cursorPoint.y - mouseStart.y
 
     const moveList = this.editor.list.length > 1 ? [...this.editor.list, this.editor.element] : this.editor.list
 
