@@ -1,9 +1,17 @@
 import './index.css'
 import type { App, Group } from 'leafer-ui'
+import imglyRemoveBackground from '@imgly/background-removal'
+import { IkonImage } from '../ikon-image'
+
+type ContextmenuItem = { type: 'separator', dom?: HTMLDivElement } |
+  { id: string, type: 'action', name: string, action: () => void, dom?: HTMLDivElement }
 
 export class Contextmenu {
   private bg: HTMLDivElement
   private menu: HTMLDivElement
+  private items: ContextmenuItem[] = []
+  public enableRemoveBackground = false
+
   constructor(private app: App, private icon: Group) {
     this.bg = document.createElement('div')
     this.bg.className = 'ikon-contextmenu-bg'
@@ -33,40 +41,49 @@ export class Contextmenu {
   }
 
   private createMenus() {
-    const menus = [
+    this.items = [
       {
+        id: 'move-forward',
         type: 'action', // 'action' | 'separator
         name: 'Move Forward',
         action: this.moveForward,
       },
       {
+        id: 'move-backward',
         type: 'action',
         name: 'Move Backward',
         action: this.moveBackward,
       },
       {
+        id: 'move-to-top',
         type: 'action',
         name: 'Move to Top',
         action: this.moveToTop,
       },
       {
+        id: 'move-to-bottom',
         type: 'action',
         name: 'Move to Bottom',
         action: this.moveToBottom,
       },
       {
-        type: 'separator',
-        name: '',
-        action: () => { },
+        id: 'remove-background',
+        type: 'action',
+        name: 'Remove Background',
+        action: this.removeOrRestoreBackground,
       },
       {
+        type: 'separator',
+      },
+      {
+        id: 'delete',
         type: 'action',
         name: 'Delete',
         action: this.deleteSelectedItems,
       },
     ]
 
-    for (const menu of menus) {
+    for (const menu of this.items) {
       const menuItem = document.createElement('div')
       if (menu.type === 'separator') {
         menuItem.className = 'ikon-contextmenu-separator'
@@ -81,6 +98,7 @@ export class Contextmenu {
         })
       }
       this.menu.appendChild(menuItem)
+      menu.dom = menuItem
     }
   }
 
@@ -138,6 +156,31 @@ export class Contextmenu {
     this.app.tree.forceRender()
   }
 
+  private removeOrRestoreBackground = async () => {
+    if (!(this.enableRemoveBackground && (this.selectedItems.length === 1 && this.selectedItems[0] instanceof IkonImage)))
+      return
+
+    const img = this.selectedItems[0]
+    // restore background
+    if (img.clipUrl && img.clipUrl === img.url) {
+      img.url = img.sourceUrl
+      return
+    }
+
+    // img has been clipped
+    if (img.clipUrl) {
+      img.url = img.clipUrl
+      return
+    }
+
+    const blob = await imglyRemoveBackground(img.sourceUrl, {
+      debug: true,
+    })
+    const url = URL.createObjectURL(blob)
+    img.clipUrl = url
+    img.url = url
+  }
+
   private deleteSelectedItems = () => {
     const items = [...this.selectedItems]
     items.forEach((item) => {
@@ -150,6 +193,18 @@ export class Contextmenu {
   show = (e: MouseEvent) => {
     if (this.editor.list.length === 0)
       return
+
+    const removeBgItem = this.items.find(e => e.type === 'action' && e.id === 'remove-background')!.dom!
+    if (this.enableRemoveBackground && (this.selectedItems.length === 1 && this.selectedItems[0] instanceof IkonImage)) {
+      removeBgItem.style.display = 'block'
+      const img = this.selectedItems[0]
+      if (img.clipUrl && img.clipUrl === img.url)
+        removeBgItem.textContent = 'Restore Background'
+      else
+        removeBgItem.textContent = 'Remove Background'
+    }
+    else { removeBgItem.style.display = 'none' }
+
     this.bg.className = 'ikon-contextmenu-bg show'
     this.menu.style.left = `${e.clientX}px`
     this.menu.style.top = `${e.clientY}px`

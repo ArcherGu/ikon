@@ -20,6 +20,7 @@
     "postinstall": "npx simple-git-hooks"
   },
   "dependencies": {
+    "@imgly/background-removal": "^1.4.5",
     "@leafer-in/editor": "1.0.0-rc.19",
     "@vueuse/core": "^10.9.0",
     "element-plus": "^2.6.2",

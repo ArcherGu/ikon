@@ -1,5 +1,5 @@
 import './plugins'
-import { App, Bounds, Box, ChildEvent, Group, Image, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
+import { App, Bounds, Box, ChildEvent, Group, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
 import { EditorMoveEvent } from '@leafer-in/editor'
 import JSZip from 'jszip'
 import type { IconBackground } from './types'
@@ -11,6 +11,7 @@ import { getIOSIcons } from './platforms/ios'
 import type { IconInfo } from './platforms/types'
 import { getCustomSizeIcons } from './platforms/custom'
 import { Contextmenu } from './contextmenu'
+import { IkonImage } from './ikon-image'
 
 export class IkonEditor {
   private app: App
@@ -36,7 +37,7 @@ export class IkonEditor {
       editor: {
         keyEvent: true,
         rotatePoint: {},
-        middlePoint: { width: 16, height: 4, cornerRadius: 2 },
+        // middlePoint: { width: 16, height: 4, cornerRadius: 2 },
       },
     })
 
@@ -105,8 +106,9 @@ export class IkonEditor {
 
   private onImageRemove = (e: ChildEvent) => {
     const { target } = e
-    if (target instanceof Image) {
-      URL.revokeObjectURL(target.url)
+    if (target instanceof IkonImage) {
+      URL.revokeObjectURL(target.sourceUrl)
+      target.clipUrl && URL.revokeObjectURL(target.clipUrl)
       this.triggerImagesCountChange()
     }
   }
@@ -152,14 +154,12 @@ export class IkonEditor {
   }
 
   getAllImages() {
-    return this.icon.children.filter(child => child instanceof Image) as Image[]
+    return this.icon.children.filter(child => child instanceof IkonImage) as IkonImage[]
   }
 
   addImage(file: File) {
-    const img = new Image({
-      url: URL.createObjectURL(file),
-      editable: true,
-    })
+    const img = new IkonImage(URL.createObjectURL(file))
+    img.editable = true
 
     img.once(ImageEvent.LOADED, (_: ImageEvent) => {
       const { width, height } = this.app
@@ -202,7 +202,10 @@ export class IkonEditor {
   }
 
   destroy() {
-    this.getAllImages().forEach(img => URL.revokeObjectURL(img.url))
+    this.getAllImages().forEach((img) => {
+      URL.revokeObjectURL(img.sourceUrl)
+      img.clipUrl && URL.revokeObjectURL(img.clipUrl)
+    })
     this.container.removeEventListener('contextmenu', this.contextmenu.show)
     this.contextmenu.destroy()
     this.app.destroy()
@@ -268,5 +271,9 @@ export class IkonEditor {
     a.download = 'ikon.zip'
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  triggerBackgroundRemove(enable: boolean) {
+    this.contextmenu.enableRemoveBackground = enable
   }
 }

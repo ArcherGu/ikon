@@ -71,6 +71,14 @@ onChange((files) => {
   }
 })
 
+const extraTools = ref({
+  backgroundRemove: false,
+})
+
+watch(extraTools, (value) => {
+  editor?.triggerBackgroundRemove(value.backgroundRemove)
+}, { deep: true })
+
 const customSizes = ref<number[]>([])
 const platform = ref<Platform[]>([])
 onBeforeMount(() => {
@@ -123,6 +131,24 @@ async function generateAndDownload() {
               <el-slider v-model="iconBg.radius" :step="1" :min="0" :max="50" :show-tooltip="false" />
               <span class="text-gray-500 ml-15px">[{{ `${iconBg.radius}%` }}]</span>
             </div>
+          </div>
+        </div>
+
+        <div class="extra-tools mt-20px">
+          <div class="flex items-center">
+            <el-popover
+              placement="top-start" :width="200" trigger="hover"
+              content="if enable this tool, when first using the tool, it will take a few seconds to download the model."
+            >
+              <template #reference>
+                <i-fluent-question-circle-12-regular class="text-gray-500 text-14px mr-5px cursor-pointer" />
+              </template>
+            </el-popover>
+
+            <span class="ctrl-label !mr-10px">
+              Background Remove Tool:
+            </span>
+            <el-switch v-model="extraTools.backgroundRemove" />
           </div>
         </div>
       </div>
