@@ -11,6 +11,15 @@ onUnmounted(() => {
   editor?.destroy()
 })
 
+const iconBg = ref<IconBackground>({
+  visible: true,
+  color: '#ffffff',
+  radius: 20,
+})
+watch(iconBg, (value) => {
+  editor?.updateIconBg(value)
+}, { deep: true })
+
 const hasImage = ref(false)
 const editorRef = ref<HTMLDivElement>()
 watch(
@@ -24,6 +33,8 @@ watch(
     editor.onImagesCountChange((c) => {
       hasImage.value = c > 0
     })
+
+    editor.updateIconBg(iconBg.value)
   },
   { flush: 'post' },
 )
@@ -59,15 +70,6 @@ onChange((files) => {
     reset()
   }
 })
-
-const iconBg = ref<IconBackground>({
-  visible: false,
-  color: '#ffffff',
-  radius: 20,
-})
-watch(iconBg, (value) => {
-  editor?.updateIconBg(value)
-}, { deep: true })
 
 const customSizes = ref<number[]>([])
 const platform = ref<Platform[]>([])
