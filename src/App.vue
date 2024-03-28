@@ -189,6 +189,13 @@ async function generateAndDownload() {
         Generate & Download
       </el-button>
     </div>
+
+    <div class="foot">
+      <span class="mr-5px">Made with</span>
+      <i-ri-heart-2-fill class="heart" />
+      <span class="mx-5px">by</span>
+      <a target="_blank" href="https://archergu.me/">Archer Gu</a>
+    </div>
   </div>
 </template>
 
@@ -231,5 +238,13 @@ async function generateAndDownload() {
 
 .action-plane {
   @apply flex items-end justify-center h-100px;
+}
+
+.foot {
+  @apply fixed bottom-0 left-0 w-full h-50px flex items-center justify-center text-gray-500;
+}
+
+.foot .heart {
+  color: #f43f5e;
 }
 </style>
