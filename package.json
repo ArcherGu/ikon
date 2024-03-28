@@ -23,6 +23,7 @@
     "@imgly/background-removal": "^1.4.5",
     "@leafer-in/editor": "1.0.0-rc.19",
     "@vueuse/core": "^10.9.0",
+    "animejs": "^3.2.2",
     "element-plus": "^2.6.2",
     "jszip": "^3.10.1",
     "leafer-ui": "1.0.0-rc.19",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@iconify/json": "^2.2.196",
     "@lightwing/eslint-config": "^1.0.33",
+    "@types/animejs": "^3.1.12",
     "@types/node": "^20.11.30",
     "@unocss/eslint-plugin": "^0.58.7",
     "@unocss/transformer-directives": "^0.58.7",

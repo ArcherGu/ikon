@@ -173,12 +173,22 @@ export class Contextmenu {
       return
     }
 
-    const blob = await imglyRemoveBackground(img.sourceUrl, {
-      debug: true,
-    })
-    const url = URL.createObjectURL(blob)
-    img.clipUrl = url
-    img.url = url
+    try {
+      img.loading = true
+      const blob = await imglyRemoveBackground(img.sourceUrl, {
+        debug: true,
+      })
+      const url = URL.createObjectURL(blob)
+      img.clipUrl = url
+      img.url = url
+    }
+    catch (error) {
+      // if the image is deleted while processing, the error will be caught here
+      console.error(error)
+    }
+    finally {
+      img.loading = false
+    }
   }
 
   private deleteSelectedItems = () => {

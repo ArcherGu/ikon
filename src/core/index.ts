@@ -1,5 +1,5 @@
 import './plugins'
-import { App, Bounds, Box, ChildEvent, Group, ImageEvent, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
+import { App, Bounds, Box, ChildEvent, Group, KeyEvent, PointerEvent, Rect } from 'leafer-ui'
 import { EditorMoveEvent } from '@leafer-in/editor'
 import JSZip from 'jszip'
 import type { IconBackground } from './types'
@@ -158,22 +158,8 @@ export class IkonEditor {
   }
 
   addImage(file: File) {
-    const img = new IkonImage(URL.createObjectURL(file))
-    img.editable = true
-
-    img.once(ImageEvent.LOADED, (_: ImageEvent) => {
-      const { width, height } = this.app
-      if (img.width > width / 2 || img.height > height / 2) {
-        const scale = img.width > img.height ? width / img.width / 2 : height / img.height / 2
-        img.width = img.width * scale
-        img.height = img.height * scale
-      }
-
-      img.x = (width - img.width) / 2
-      img.y = (height - img.height) / 2
-    })
-
-    this.icon.add(img)
+    const ikonImg = new IkonImage(URL.createObjectURL(file))
+    this.icon.add(ikonImg)
     this.triggerImagesCountChange()
   }
 
