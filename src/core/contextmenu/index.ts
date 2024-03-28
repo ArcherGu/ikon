@@ -175,9 +175,7 @@ export class Contextmenu {
 
     try {
       img.loading = true
-      const blob = await imglyRemoveBackground(img.sourceUrl, {
-        debug: true,
-      })
+      const blob = await imglyRemoveBackground(img.sourceUrl)
       const url = URL.createObjectURL(blob)
       img.clipUrl = url
       img.url = url
