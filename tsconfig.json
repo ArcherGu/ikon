@@ -20,7 +20,8 @@
     "resolveJsonModule": true,
     "types": [
       "unplugin-icons/types/vue",
-      "element-plus/global"
+      "element-plus/global",
+      "vite-plugin-pwa/vue"
     ],
     "allowImportingTsExtensions": true,
     /* Linting */
