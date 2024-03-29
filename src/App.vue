@@ -195,6 +195,9 @@ async function generateAndDownload() {
       <i-ri-heart-2-fill class="heart" />
       <span class="mx-5px">by</span>
       <a target="_blank" href="https://archergu.me/">Archer Gu</a>
+      <a target="_blank" href="https://github.com/ArcherGu/ikon">
+        <i-logos-github-icon class="ml-5px" />
+      </a>
     </div>
   </div>
 </template>
