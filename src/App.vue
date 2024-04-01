@@ -102,7 +102,7 @@ async function generateAndDownload() {
 </script>
 
 <template>
-  <div class="h-full w-full flex flex-col items-center">
+  <div class="w-full flex flex-col items-center">
     <div class="logo-plane mt-100px">
       <img :src="logo" alt="ikon" class="w-100px">
       <div class="text-80px text-gray-500 ml-10px">
@@ -244,7 +244,7 @@ async function generateAndDownload() {
 }
 
 .foot {
-  @apply fixed bottom-0 left-0 w-full h-50px flex items-center justify-center text-gray-500;
+  @apply w-full h-50px flex items-center justify-center text-gray-500 mt-40px;
 }
 
 .foot .heart {

@@ -5,7 +5,7 @@ html,
 #app {
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow: auto;
   scroll-behavior: smooth;
   margin: 0;
   font-family: Dosis, "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
