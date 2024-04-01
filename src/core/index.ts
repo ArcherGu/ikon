@@ -222,10 +222,11 @@ export class IkonEditor {
       width: this.iconBg.width!,
       height: this.iconBg.height!,
       overflow: 'hide',
-      cornerRadius: this.iconBg.cornerRadius,
+      cornerRadius: this.iconBg.visible ? this.iconBg.cornerRadius : 0,
     })
 
-    box.add(this.iconBg.clone())
+    this.iconBg.visible && box.add(this.iconBg.clone())
+
     const images = this.getAllImages()
     for (const img of images)
       box.add(img.clone())
