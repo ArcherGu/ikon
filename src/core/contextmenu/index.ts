@@ -67,6 +67,12 @@ export class Contextmenu {
         action: this.moveToBottom,
       },
       {
+        id: 'full-canvas',
+        type: 'action',
+        name: 'Full Canvas',
+        action: this.resizeToFullCanvas,
+      },
+      {
         id: 'remove-background',
         type: 'action',
         name: 'Remove Background',
@@ -156,6 +162,21 @@ export class Contextmenu {
     this.app.tree.forceRender()
   }
 
+  private resizeToFullCanvas = () => {
+    const ikonImg = this.selectedItems[0] as IkonImage
+
+    const { img } = ikonImg
+    const { width, height } = this.app
+
+    const scale = Math.min(width / img.width, height / img.height)
+    img.width = img.width * scale
+    img.height = img.height * scale
+    ikonImg.width = img.width
+    ikonImg.height = img.height
+    ikonImg.x = (width - ikonImg.width) / 2
+    ikonImg.y = (height - ikonImg.height) / 2
+  }
+
   private removeOrRestoreBackground = async () => {
     if (!(this.enableRemoveBackground && (this.selectedItems.length === 1 && this.selectedItems[0] instanceof IkonImage)))
       return
@@ -202,16 +223,24 @@ export class Contextmenu {
     if (this.editor.list.length === 0)
       return
 
+    const isSingleImg = this.selectedItems.length === 1 && this.selectedItems[0] instanceof IkonImage
     const removeBgItem = this.items.find(e => e.type === 'action' && e.id === 'remove-background')!.dom!
-    if (this.enableRemoveBackground && (this.selectedItems.length === 1 && this.selectedItems[0] instanceof IkonImage)) {
+    if (this.enableRemoveBackground && isSingleImg) {
       removeBgItem.style.display = 'block'
-      const img = this.selectedItems[0]
+      const img = this.selectedItems[0] as IkonImage
       if (img.clipUrl && img.clipUrl === img.url)
         removeBgItem.textContent = 'Restore Background'
       else
         removeBgItem.textContent = 'Remove Background'
     }
     else { removeBgItem.style.display = 'none' }
+
+    const fullCanvasItem = this.items.find(e => e.type === 'action' && e.id === 'full-canvas')!.dom!
+    if (isSingleImg)
+      fullCanvasItem.style.display = 'block'
+
+    else
+      fullCanvasItem.style.display = 'none'
 
     this.bg.className = 'ikon-contextmenu-bg show'
     this.menu.style.left = `${e.clientX}px`
